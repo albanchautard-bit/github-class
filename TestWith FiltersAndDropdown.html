@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARS Core v2 - Infrastructure Obsolescence Timeline</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #F4F2F6;
+            color: #333;
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 0 20px;
+        }
+        
+        .logo-container {
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(35, 0, 76, 0.1);
+            margin-left: 20px;
+        }
+        
+        .logo-container img { height: 60px; width: auto; display: block; }
+        
+        h1 {
+            color: #23004C;
+            font-weight: bold;
+            line-height: 1.4;
+            flex-grow: 1;
+        }
+        
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .toggle-btn {
+            background-color: #F4F2F6;
+            border: 2px solid #23004C;
+            color: #23004C;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .toggle-btn:first-child { border-radius: 5px 0 0 5px; }
+        .toggle-btn:not(:first-child):not(.dropdown-btn) { border-left: none; }
+        .toggle-btn.active { background-color: #23004C; color: white; }
+        
+        /* Dropdown styles */
+        .dropdown-container {
+            position: relative;
+            display: inline-block;
+            border-left: none;
+        }
+        
+        .dropdown-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-width: 150px;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .dropdown-arrow {
+            margin-left: 8px;
+            font-size: 10px;
+            transition: transform 0.3s;
+        }
+        
+        .dropdown-btn.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 150px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 1000;
+            border-radius: 5px;
+            margin-top: 2px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .dropdown-menu.show {
+            display: block;
+        }
+        
+        .dropdown-item {
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            color: #23004C;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .dropdown-item:first-child {
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .dropdown-item:last-child {
+            border-radius: 0 0 5px 5px;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #F4F2F6;
+        }
+        
+        .dropdown-item.active {
+            background-color: #23004C;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(35, 0, 76, 0.1);
+            overflow-x: auto;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .legend-btn {
+            display: flex;
+            align-items: center;
+            padding: 10px 18px;
+            border: 2px solid #23004C;
+            background-color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .legend-btn:hover {
+            background-color: #F4F2F6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(35, 0, 76, 0.15);
+        }
+
+        .legend-btn.active {
+            background-color: #23004C;
+            color: white;
+            box-shadow: 0 4px 12px rgba(35, 0, 76, 0.3);
+        }
+
+        .legend-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 3px;
+            margin-right: 8px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .legend-label {
+            white-space: nowrap;
+        }
+
+        .legend-counter {
+            background-color: rgba(35, 0, 76, 0.1);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 8px;
+            font-weight: bold;
+        }
+
+        .legend-btn.active .legend-counter {
+            background-color: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+
+        .legend-btn[data-filter="all"] {
+            background-color: #F4F2F6;
+            font-weight: bold;
+        }
+
+        .legend-btn[data-filter="all"].active {
+            background-color: #23004C;
+        }
+        
+        table { width: 100%; border-collapse: collapse; }
+        
+        th {
+            background-color: #23004C;
+            color: white;
+            font-weight: bold;
+            padding: 12px 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        td {
+            padding: 8px 4px 8px 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        tbody td:nth-child(-n+4) { color: #7A00E6; }
+        
+        .category-title-row { background-color: #F4F2F6 !important; }
+        .category-title-row td {
+            color: #23004C !important;
+            font-size: 20px;
+            font-weight: 500;
+            padding: 20px 15px !important;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .category-even { background-color: #FFFFFF; }
+        .category-odd { background-color: #F4F2F6; }
+        tr:hover td { background-color: rgba(122, 0, 230, 0.1) !important; }
+        
+        tbody tr {
+            transition: opacity 0.3s ease;
+        }
+        
+        .timeline-header { text-align: center; padding: 12px 5px; }
+        .timeline-cell {
+            padding: 0;
+            position: relative;
+            background-color: #f9f9f9;
+            min-width: 400px;
+        }
+        
+        .timeline-bar-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 3px;
+        }
+        
+        .timeline-bar-container {
+            position: relative;
+            width: 100%;
+            height: 16px;
+            background-color: #e0e0e0;
+            border-radius: 2px;
+            display: flex;
+        }
+        
+        .timeline-bar {
+            height: 100%;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .standard-support { background-color: #2ecc71; }
+        .extended-support { background-color: #f39c12; }
+        .end-of-support { background-color: #e74c3c; }
+        
+        .year-headers { display: flex; width: 100%; height: 100%; }
+        .year-header {
+            flex: 1;
+            text-align: center;
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .year-header:last-child { border-right: none; }
+        
+        .tooltip {
+            position: fixed;
+            background-color: #23004C;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 100000;
+            pointer-events: none;
+            white-space: nowrap;
+            display: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .header-container { flex-direction: column; align-items: center; }
+            h1 { text-align: center; margin-bottom: 20px; }
+            .logo-container { margin-left: 0; }
+            .legend { gap: 8px; }
+            .legend-btn { padding: 8px 12px; font-size: 13px; }
+            .toggle-container { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <h1>MARS Core v2 based on Siemens Op. Ex. Ph. 2305<br>Infrastructure Obsolescence Timeline</h1>
+        <div class="logo-container">
+            <img src="Sanofi logo CMYK JPG.jpg" alt="ALBAN Logo">
+        </div>
+    </div>
+    
+    <div class="toggle-container">
+        <button class="toggle-btn active" data-section="sharedInfrastructure">Shared Mars Infrastructure</button>
+        <button class="toggle-btn" data-section="applicationInfrastructureOnPremise">Application Infra (On Prem)</button>
+        <button class="toggle-btn" data-section="applicationInfrastructureCloud">Application Infra (Azure)</button>
+        <!-- NEW DROPDOWN BUTTON -->
+        <div class="dropdown-container">
+            <button class="toggle-btn dropdown-btn" id="siteDropdown">
+                Sites <span class="dropdown-arrow">▼</span>
+            </button>
+            <div class="dropdown-menu" id="siteDropdownMenu">
+                <div class="dropdown-item active" data-site="all">All Sites</div>
+                <!-- Site options will be populated from siteMapping -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="legend">
+        <button class="legend-btn active" data-filter="all">
+            <span class="legend-label">All</span>
+            <span class="legend-counter">0</span>
+        </button>
+        <button class="legend-btn" data-filter="supported">
+            <span class="legend-color" style="background-color: #2ecc71;"></span>
+            <span class="legend-label">Supported</span>
+            <span class="legend-counter">0</span>
+        </button>
+        <button class="legend-btn" data-filter="extended">
+            <span class="legend-color" style="background-color: #f39c12;"></span>
+            <span class="legend-label">Extended Support</span>
+            <span class="legend-counter">0</span>
+        </button>
+        <button class="legend-btn" data-filter="unsupported">
+            <span class="legend-color" style="background-color: #e74c3c;"></span>
+            <span class="legend-label">Out of Support</span>
+            <span class="legend-counter">0</span>
+        </button>
+    </div>
+
+    <div class="section">
+        <table>
+            <thead>
+                <tr>
+                    <th>Component</th>
+                    <th>Type</th>
+                    <th>Location</th>
+                    <th>Model</th>
+                    <th class="timeline-header">
+                        <div class="year-headers">
+                            <div class="year-header">2025</div>
+                            <div class="year-header">2026</div>
+                            <div class="year-header">2027</div>
+                            <div class="year-header">2028</div>
+                            <div class="year-header">2029</div>
+                            <div class="year-header">2030</div>
+                            <div class="year-header">2031</div>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // ============================================================================
+        // SECTION 1: PASTE YOUR ORIGINAL GLOBAL DATA HERE
+        // ============================================================================
+        const data = {
+              "metadata": {
+    "title": "MARS Core v2 based on Siemens Op. Ex. Ph. 2305 - Infrastructure obsolescence timeline",
+    "version": "1.0",
+    "generatedDate": "2025-11-07"
+  },
+  "sharedInfrastructure": {
+    "section": "SHARED_INFRASTRUCTURE",
+    "components": [
+      {
+        "id": "network_001",
+        "subCategory": "NETWORK DEVICES",
+        "category": "Network",
+        "component": "Core switch",
+        "type": "Network switch",
+        "location": "On Premise",
+        "model": "C9500-48Y4C",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "network_002",
+        "subCategory": "NETWORK DEVICES",
+        "category": "Network",
+        "component": "Core switch",
+        "type": "Network switch",
+        "location": "On Premise",
+        "model": "WS-C4500X-32",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "10/31/2025"
+      },
+      {
+        "id": "network_003",
+        "subCategory": "NETWORK DEVICES",
+        "category": "Network",
+        "component": "Core switch",
+        "type": "Network switch",
+        "location": "On Premise",
+        "model": "WS-C3850-24XS-E",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "4/30/2027"
+      },
+      {
+        "id": "network_004",
+        "subCategory": "NETWORK DEVICES",
+        "category": "Network",
+        "component": "Core switch",
+        "type": "Network switch",
+        "location": "On Premise",
+        "model": "WS-C3850-24S-S",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "4/30/2027"
+      },
+      {
+        "id": "network_005",
+        "subCategory": "NETWORK DEVICES",
+        "category": "Network",
+        "component": "Core switch",
+        "type": "Network switch",
+        "location": "On Premise",
+        "model": "C9600",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "network_006",
+        "subCategory": "NETWORK DEVICES",
+        "category": "Network",
+        "component": "Nexus Switch",
+        "type": "Network switch",
+        "location": "On Premise",
+        "model": "N9K-C93180YC-FX-24",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "7/31/2029"
+      },
+      {
+        "id": "network_007",
+        "subCategory": "NETWORK DEVICES",
+        "category": "Network",
+        "component": "Nexus Switch",
+        "type": "Network switch",
+        "location": "On Premise",
+        "model": "N9K-C93180YC-FX3",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "network_008",
+        "subCategory": "NETWORK DEVICES",
+        "category": "Network",
+        "component": "Nexus Switch",
+        "type": "Network switch",
+        "location": "On Premise",
+        "model": "N9K-C93180YC-EX-24",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "8/31/2027"
+      },
+      {
+        "id": "network_009",
+        "subCategory": "NETWORK DEVICES",
+        "category": "Network",
+        "component": "Nexus Switch",
+        "type": "Network switch",
+        "location": "On Premise",
+        "model": "N9K-C93240YC-FX2",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "network_010",
+        "subCategory": "NETWORK DEVICES",
+        "category": "Network",
+        "component": "Nexus Switch",
+        "type": "Network switch",
+        "location": "On Premise",
+        "model": "N9K-C93108TC-FX3P",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "network_011",
+        "subCategory": "NETWORK DEVICES",
+        "category": "Network",
+        "component": "Nexus Switch",
+        "type": "Network switch",
+        "location": "On Premise",
+        "model": "N9K-C93180YC-EX",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "8/9/2027"
+      },
+      {
+        "id": "storage_001",
+        "subCategory": "STORAGE DEVICES",
+        "category": "Storage",
+        "component": "Netapp E-series",
+        "type": "Mass Storage Device",
+        "location": "On Premise",
+        "model": "E2800",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "9/30/2030"
+      },
+      {
+        "id": "storage_002",
+        "subCategory": "STORAGE DEVICES",
+        "category": "Storage",
+        "component": "Netapp E-series",
+        "type": "Mass Storage Device",
+        "location": "On Premise",
+        "model": "E2824",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "9/30/2030"
+      },
+      {
+        "id": "storage_003",
+        "subCategory": "STORAGE DEVICES",
+        "category": "Storage",
+        "component": "Metrocluster MCC",
+        "type": "Mass Storage Device",
+        "location": "On Premise",
+        "model": "AFF_150",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "storage_004",
+        "subCategory": "STORAGE DEVICES",
+        "category": "Storage",
+        "component": "Metrocluster MCC",
+        "type": "Mass Storage Device",
+        "location": "On Premise",
+        "model": "AFF_250",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "storage_005",
+        "subCategory": "STORAGE DEVICES",
+        "category": "Storage",
+        "component": "Metrocluster MCC",
+        "type": "Mass Storage Device",
+        "location": "On Premise",
+        "model": "AFF A400",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "storage_006",
+        "subCategory": "STORAGE DEVICES",
+        "category": "Storage",
+        "component": "MSA array",
+        "type": "Mass Storage Device",
+        "location": "On Premise",
+        "model": "MSA1050",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "7/31/2028"
+      },
+      {
+        "id": "storage_007",
+        "subCategory": "STORAGE DEVICES",
+        "category": "Storage",
+        "component": "Brocade",
+        "type": "San Switch",
+        "location": "On Premise",
+        "model": "G610",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "11/30/2030"
+      },
+      {
+        "id": "storage_008",
+        "subCategory": "STORAGE DEVICES",
+        "category": "Storage",
+        "component": "ATTO",
+        "type": "San Switch",
+        "location": "On Premise",
+        "model": "ATTO FIBREBR.7600N",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "storage_009",
+        "subCategory": "STORAGE DEVICES",
+        "category": "Storage",
+        "component": "Broadcom",
+        "type": "San Switch",
+        "location": "On Premise",
+        "model": "BROADCOM BES-53248",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "storage_010",
+        "subCategory": "STORAGE DEVICES",
+        "category": "Storage",
+        "component": "Brocade",
+        "type": "San Switch",
+        "location": "On Premise",
+        "model": "BROCADE 6520",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "9/21/2027"
+      },
+      {
+        "id": "storage_011",
+        "subCategory": "STORAGE DEVICES",
+        "category": "Storage",
+        "component": "Brocade",
+        "type": "San Switch",
+        "location": "On Premise",
+        "model": "BROCADE G720",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "storage_012",
+        "subCategory": "STORAGE DEVICES",
+        "category": "Storage",
+        "component": "Cisco",
+        "type": "San Switch",
+        "location": "On Premise",
+        "model": "CISCO DS-C9132T-K9",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "storage_013",
+        "subCategory": "STORAGE DEVICES",
+        "category": "Storage",
+        "component": "Cisco",
+        "type": "San Switch",
+        "location": "On Premise",
+        "model": "CISCO MDS 9148S",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "8/31/2028"
+      },
+      {
+        "id": "storage_014",
+        "subCategory": "STORAGE DEVICES",
+        "category": "Storage",
+        "component": "Cisco",
+        "type": "San Switch",
+        "location": "On Premise",
+        "model": "CISCO MDS 9396S",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "6/30/2027"
+      },
+      {
+        "id": "storage_015",
+        "subCategory": "STORAGE DEVICES",
+        "category": "Storage",
+        "component": "HP",
+        "type": "San Switch",
+        "location": "On Premise",
+        "model": "HP SN3600B",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "backup_001",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "StoreOnce",
+        "type": "Backup Appliance",
+        "location": "On Premise",
+        "model": "StoreOnce 3540",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "backup_002",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "StoreOnce",
+        "type": "Backup Appliance",
+        "location": "On Premise",
+        "model": "StoreOnce 3620",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "4/30/2027"
+      },
+      {
+        "id": "backup_003",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "StoreOnce",
+        "type": "Backup Appliance",
+        "location": "On Premise",
+        "model": "StoreOnce 3640",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "7/31/2027"
+      },
+      {
+        "id": "backup_004",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "StoreOnce",
+        "type": "Backup Appliance",
+        "location": "On Premise",
+        "model": "StoreOnce 3660",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "7/31/2031"
+      },
+      {
+        "id": "backup_005",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "StoreOnce",
+        "type": "Backup Appliance",
+        "location": "On Premise",
+        "model": "StoreOnce 4500",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "backup_006",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "StoreOnce",
+        "type": "Backup Appliance",
+        "location": "On Premise",
+        "model": "StoreOnce 5100",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "backup_007",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "StoreOnce",
+        "type": "Backup Appliance",
+        "location": "On Premise",
+        "model": "StoreOnce 5200",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "4/30/2027"
+      },
+      {
+        "id": "backup_008",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "StoreOnce",
+        "type": "Backup Appliance",
+        "location": "On Premise",
+        "model": "StoreOnce 5250",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "4/30/2027"
+      },
+      {
+        "id": "backup_009",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "StoreOnce",
+        "type": "Backup Appliance",
+        "location": "On Premise",
+        "model": "StoreOnce 5260",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "backup_010",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "StoreOnce",
+        "type": "Backup Appliance",
+        "location": "On Premise",
+        "model": "StoreOnce 5650",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "4/30/2027"
+      },
+      {
+        "id": "backup_011",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "Media Server",
+        "type": "Physical Server",
+        "location": "On Premise",
+        "model": "DL380 Gen9",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "7/1/2024"
+      },
+      {
+        "id": "backup_012",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "Media Server",
+        "type": "Physical Server",
+        "location": "On Premise",
+        "model": "DL380 Gen10",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "3/30/2028"
+      },
+      {
+        "id": "backup_013",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "Media Server",
+        "type": "Physical Server",
+        "location": "On Premise",
+        "model": "DL380 Gen10+",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "3/31/2030"
+      },
+      {
+        "id": "backup_014",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "Media Server",
+        "type": "Physical Server",
+        "location": "On Premise",
+        "model": "DL380 Gen11",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "1/31/2031"
+      },
+      {
+        "id": "backup_015",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "Media Server",
+        "type": "Virtual server",
+        "location": "On Premise",
+        "model": "Windows 2016",
+        "endOfStandardSupport": "11/1/2022",
+        "endOfExtendedSupport": "1/11/2027"
+      },
+      {
+        "id": "backup_016",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "Media Server",
+        "type": "Virtual server",
+        "location": "On Premise",
+        "model": "Windows 2019",
+        "endOfStandardSupport": "1/9/2024",
+        "endOfExtendedSupport": "1/9/2029"
+      },
+      {
+        "id": "backup_017",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "Media Server",
+        "type": "Virtual server",
+        "location": "On Premise",
+        "model": "Windows 2022",
+        "endOfStandardSupport": "10/13/2026",
+        "endOfExtendedSupport": "10/14/2031"
+      },
+      {
+        "id": "backup_018",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "Media Server",
+        "type": "Virtual server",
+        "location": "On Premise",
+        "model": "Windows 2025",
+        "endOfStandardSupport": "11/13/2029",
+        "endOfExtendedSupport": "11/14/2025"
+      },
+      {
+        "id": "backup_019",
+        "subCategory": "BACKUP DEVICES",
+        "category": "Backup",
+        "component": "Commvault",
+        "type": "Backup software",
+        "location": "On Premise",
+        "model": "",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": null
+      },
+      {
+        "id": "virtualization_001",
+        "subCategory": "VIRTUALIZATION DEVICES",
+        "category": "Virtu",
+        "component": "Vxrail",
+        "type": "Hyperconverged Infra",
+        "location": "On Premise",
+        "model": "P570F",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "9/30/2027"
+      },
+      {
+        "id": "virtualization_002",
+        "subCategory": "VIRTUALIZATION DEVICES",
+        "category": "Virtu",
+        "component": "Vxrail",
+        "type": "Hyperconverged Infra",
+        "location": "On Premise",
+        "model": "P670F",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "6/30/2030"
+      },
+      {
+        "id": "virtualization_003",
+        "subCategory": "VIRTUALIZATION DEVICES",
+        "category": "Virtu",
+        "component": "Vxrail",
+        "type": "Hyperconverged Infra",
+        "location": "On Premise",
+        "model": "VP-760",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "virtualization_004",
+        "subCategory": "VIRTUALIZATION DEVICES",
+        "category": "Virtu",
+        "component": "Vsan Ready",
+        "type": "Hyperconverged Infra",
+        "location": "On Premise",
+        "model": "R660",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "virtualization_005",
+        "subCategory": "VIRTUALIZATION DEVICES",
+        "category": "Virtu",
+        "component": "Vsan Ready",
+        "type": "Hyperconverged Infra",
+        "location": "On Premise",
+        "model": "R760",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "Not yet announed"
+      },
+      {
+        "id": "virtualization_006",
+        "subCategory": "VIRTUALIZATION DEVICES",
+        "category": "Virtu",
+        "component": "VmWare",
+        "type": "Operating system",
+        "location": "On Premise",
+        "model": "ESXi 6.x",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "11/15/2023"
+      },
+      {
+        "id": "virtualization_007",
+        "subCategory": "VIRTUALIZATION DEVICES",
+        "category": "Virtu",
+        "component": "VmWare",
+        "type": "Operating system",
+        "location": "On Premise",
+        "model": "ESXi 7.x",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "4/2/2027"
+      },
+      {
+        "id": "virtualization_008",
+        "subCategory": "VIRTUALIZATION DEVICES",
+        "category": "Virtu",
+        "component": "VmWare",
+        "type": "Operating system",
+        "location": "On Premise",
+        "model": "ESXi 8.x",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "10/11/2029"
+      },
+      {
+        "id": "domain_001",
+        "subCategory": "DOMAIN CONTROLLERS",
+        "category": "Domain controller",
+        "component": "Hyper-V Server",
+        "type": "Physical Server",
+        "location": "On Premise",
+        "model": "DL380 Gen9",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "7/1/2024"
+      },
+      {
+        "id": "domain_002",
+        "subCategory": "DOMAIN CONTROLLERS",
+        "category": "Domain controller",
+        "component": "Hyper-V Server",
+        "type": "Physical Server",
+        "location": "On Premise",
+        "model": "DL380 Gen10",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "3/30/2028"
+      },
+      {
+        "id": "domain_003",
+        "subCategory": "DOMAIN CONTROLLERS",
+        "category": "Domain controller",
+        "component": "Hyper-V Server",
+        "type": "Physical Server",
+        "location": "On Premise",
+        "model": "DL380 Gen10+",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "3/31/2030"
+      },
+      {
+        "id": "domain_004",
+        "subCategory": "DOMAIN CONTROLLERS",
+        "category": "Domain controller",
+        "component": "Hyper-V Server",
+        "type": "Physical Server",
+        "location": "On Premise",
+        "model": "DL380 Gen11",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "1/31/2031"
+      },
+      {
+        "id": "domain_005",
+        "subCategory": "DOMAIN CONTROLLERS",
+        "category": "Domain controller",
+        "component": "Virtual DC",
+        "type": "Virtual server",
+        "location": "On Premise",
+        "model": "Windowsdows 2016",
+        "endOfStandardSupport": "11/1/2022",
+        "endOfExtendedSupport": "1/12/2027"
+      },
+      {
+        "id": "domain_006",
+        "subCategory": "DOMAIN CONTROLLERS",
+        "category": "Domain controller",
+        "component": "Virtual DC",
+        "type": "Virtual server",
+        "location": "On Premise",
+        "model": "Windowsdows 2019",
+        "endOfStandardSupport": "1/9/2024",
+        "endOfExtendedSupport": "1/9/2029"
+      },
+      {
+        "id": "domain_007",
+        "subCategory": "DOMAIN CONTROLLERS",
+        "category": "Domain controller",
+        "component": "Virtual DC",
+        "type": "Virtual server",
+        "location": "On Premise",
+        "model": "Windowsdows 2022",
+        "endOfStandardSupport": "10/13/2026",
+        "endOfExtendedSupport": "10/14/2031"
+      },
+      {
+        "id": "domain_008",
+        "subCategory": "DOMAIN CONTROLLERS",
+        "category": "Domain controller",
+        "component": "Virtual DC",
+        "type": "Virtual server",
+        "location": "On Premise",
+        "model": "Windowsdows 2025",
+        "endOfStandardSupport": "11/13/2029",
+        "endOfExtendedSupport": "11/14/2034"
+      },
+      {
+        "id": "oracle_001",
+        "subCategory": "Oracle DB hosting",
+        "category": "RedHat Pacemaker cluster",
+        "component": "Unix cluster node",
+        "type": "Physical Server",
+        "location": "On Premise",
+        "model": "DL380 Gen9",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "7/1/2024"
+      },
+      {
+        "id": "oracle_002",
+        "subCategory": "Oracle DB hosting",
+        "category": "RedHat Pacemaker cluster",
+        "component": "Unix cluster node",
+        "type": "Physical Server",
+        "location": "On Premise",
+        "model": "DL380 Gen10",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "3/30/2028"
+      },
+      {
+        "id": "oracle_003",
+        "subCategory": "Oracle DB hosting",
+        "category": "RedHat Pacemaker cluster",
+        "component": "Unix cluster node",
+        "type": "Physical Server",
+        "location": "On Premise",
+        "model": "DL380 Gen10+",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "3/31/2030"
+      },
+      {
+        "id": "oracle_004",
+        "subCategory": "Oracle DB hosting",
+        "category": "RedHat Pacemaker cluster",
+        "component": "Unix cluster node",
+        "type": "Physical Server",
+        "location": "On Premise",
+        "model": "DL380 Gen11",
+        "endOfStandardSupport": null,
+        "endOfExtendedSupport": "1/31/2031"
+      }
+    ]
+  },
+  "applicationInfrastructureOnPremise": {
+    "section": "APPLICATION_INFRASTRUCTURE_ON_PREMISE",
+    "components": [
+      {
+        "id": "onprem_001",
+        "category": "Mars Siemens servers",
+        "component": "Application - UAF - SAMS",
+        "type": "Virtual server",
+        "location": "On Premise",
+        "model": "Windowsdows 2019 ",
+        "endOfStandardSupport": "1/9/2024",
+        "endOfExtendedSupport": "1/9/2029"
+      },
+      {
+        "id": "onprem_002",
+        "category": "Citrix Hybrid Cloud Core Model",
+        "component": "Storefront - Cloud controller - VDA",
+        "type": "Virtual server",
+        "location": "On Premise",
+        "model": "Windowsdows 2019 ",
+        "endOfStandardSupport": "1/9/2024",
+        "endOfExtendedSupport": "1/9/2029"
+      },
+      {
+        "id": "onprem_003",
+        "category": "Optional",
+        "component": "MARS MQTT Broker Server",
+        "type": "Virtual server",
+        "location": "On Premise",
+        "model": "Windowsdows 2019 ",
+        "endOfStandardSupport": "1/9/2024",
+        "endOfExtendedSupport": "1/9/2029"
+      },
+      {
+        "id": "onprem_004",
+        "category": "Optional",
+        "component": "Jumpbox",
+        "type": "Virtual server",
+        "location": "On Premise",
+        "model": "Windowsdows 2019 ",
+        "endOfStandardSupport": "1/9/2024",
+        "endOfExtendedSupport": "1/9/2029"
+      },
+      {
+        "id": "onprem_005",
+        "category": "Optional",
+        "component": "MARS eLogBook Server",
+        "type": "Azure VM standard F8as_V2 or better",
+        "location": "Azure Cloud",
+        "model": "Windowsdows 2019 ",
+        "endOfStandardSupport": "1/9/2024",
+        "endOfExtendedSupport": "1/9/2029"
+      },
+      {
+        "id": "onprem_006",
+        "category": "Optional",
+        "component": "MARS eLogBook PostGreSQL DB",
+        "type": "Database",
+        "location": "Azure Cloud",
+        "model": "PostgreSQL 16",
+        "endOfStandardSupport": "11/11/2027",
+        "endOfExtendedSupport": "11/11/2027"
+      },
+      {
+        "id": "onprem_007",
+        "category": "ORACLE Cluster",
+        "component": "Oracle Database",
+        "type": "Database",
+        "location": "On Premise",
+        "model": "Oracle 19c",
+        "endOfStandardSupport": "12/31/2029",
+        "endOfExtendedSupport": "12/31/2029"
+      },
+      {
+        "id": "onprem_008",
+        "category": "ORACLE Cluster",
+        "component": "RedHat Pacemaker cluster node",
+        "type": "Operating system",
+        "location": "On Premise",
+        "model": "RHEL 8.x",
+        "endOfStandardSupport": "12/31/2026",
+        "endOfExtendedSupport": "5/30/2028"
+      }
+    ]
+  },
+  "applicationInfrastructureCloud": {
+    "section": "APPLICATION_INFRASTRUCTURE_CLOUD",
+    "components": [
+      {
+        "id": "cloud_001",
+        "category": "Mars Siemens servers",
+        "component": "Application - UAF",
+        "type": "Azure VM Standard D8as v5 or better.",
+        "location": "Azure Cloud",
+        "model": "Windowsdows 2019 ",
+        "endOfStandardSupport": "1/9/2024",
+        "endOfExtendedSupport": "1/9/2029"
+      },
+      {
+        "id": "cloud_002",
+        "category": "Mars Siemens servers",
+        "component": "SAMS server",
+        "type": "Azure VM Standard D4as v5 or better.",
+        "location": "Azure Cloud",
+        "model": "Windowsdows 2019 ",
+        "endOfStandardSupport": "1/9/2024",
+        "endOfExtendedSupport": "1/9/2029"
+      },
+      {
+        "id": "cloud_003",
+        "category": "Citrix Hybrid Cloud Core Model",
+        "component": "VDA servers",
+        "type": "Azure VM Standard D4as v5 or better.",
+        "location": "Azure Cloud",
+        "model": "Windowsdows 2019 ",
+        "endOfStandardSupport": "1/9/2024",
+        "endOfExtendedSupport": "1/9/2029"
+      },
+      {
+        "id": "cloud_004",
+        "category": "Optional",
+        "component": "MARS eLogBook Server",
+        "type": "Azure VM standard F8as_V2 or better",
+        "location": "Azure Cloud",
+        "model": "Windowsdows 2019 ",
+        "endOfStandardSupport": "1/9/2024",
+        "endOfExtendedSupport": "1/9/2029"
+      },
+      {
+        "id": "cloud_005",
+        "category": "Optional",
+        "component": "MARS eLogBook PostGreSQL DB",
+        "type": "Database",
+        "location": "Azure Cloud",
+        "model": "PostgreSQL 16",
+        "endOfStandardSupport": "11/11/2027",
+        "endOfExtendedSupport": "11/11/2027"
+      },
+      {
+        "id": "cloud_006",
+        "category": "ORACLE Cluster",
+        "component": "Database",
+        "type": "Database",
+        "location": "Azure Cloud",
+        "model": "Oracle 19c",
+        "endOfStandardSupport": "12/31/2029",
+        "endOfExtendedSupport": "12/31/2029"
+      }
+    ]
+  }
+        };
+
+        // ============================================================================
+        // SECTION 2: ADD SITE MAPPING HERE (Tours and other sites)
+        // ============================================================================
+        const siteMapping = {
+            "Tours": {
+                "sharedInfrastructure": [
+                    "backup_004", "backup_008", "backup_016", "backup_013", 
+                    "domain_006", "domain_003", "oracle_003", "network_008", 
+                    "network_001", "storage_007", "storage_006", 
+                    "virtualization_001", "virtualization_003"
+                ],
+                "applicationInfrastructureOnPremise": [
+                    "onprem_001", "onprem_002", "onprem_004", 
+                    "onprem_007", "onprem_008"
+                ],
+                "applicationInfrastructureCloud": []
+            }
+            // ADD MORE SITES HERE AS NEEDED
+        };
+
+        // ============================================================================
+        // CONFIGURATION AND UTILITY FUNCTIONS
+        // ============================================================================
+        const config = {
+            startDate: new Date('2025-01-01'),
+            endDate: new Date('2031-12-31'),
+            get totalDays() {
+                return (this.endDate - this.startDate) / (1000 * 60 * 60 * 24);
+            }
+        };
+
+        const parseDate = (dateString) => 
+            dateString && !dateString.includes('Not yet') ? new Date(dateString) : null;
+
+        const formatDate = (date) => 
+            date ? new Date(date).toLocaleDateString('en-US', { 
+                month: '2-digit', 
+                day: '2-digit', 
+                year: 'numeric' 
+            }) : null;
+
+        const calculateWidth = (startDate, endDate) => 
+            ((endDate - startDate) / (1000 * 60 * 60 * 24) / config.totalDays) * 100;
+
+        const createTimelineBar = (type, width, tooltip) => 
+            `<div class="timeline-bar ${type}" style="width: ${width}%;" data-tooltip="${tooltip}"></div>`;
+
+        // Function to determine support status
+        const getSupportStatus = (component) => {
+            const now = new Date();
+            const standardEnd = parseDate(component.endOfStandardSupport);
+            const extendedEnd = parseDate(component.endOfExtendedSupport);
+            
+            if (!component.endOfExtendedSupport || component.endOfExtendedSupport.includes('Not yet')) {
+                return 'supported';
+            }
+            
+            if (standardEnd && standardEnd > now) {
+                return 'supported';
+            }
+            
+            if (!standardEnd && extendedEnd) {
+                if (extendedEnd > now) {
+                    return 'extended';
+                } else {
+                    return 'unsupported';
+                }
+            }
+            
+            if (extendedEnd && extendedEnd > now) {
+                return 'extended';
+            }
+            
+            return 'unsupported';
+        };
+
+        const createTimeline = (component) => {
+            const { endOfStandardSupport, endOfExtendedSupport } = component;
+            const isNotAnnounced = !endOfExtendedSupport || endOfExtendedSupport.includes('Not yet');
+            
+            if (isNotAnnounced) {
+                return createTimelineBar('standard-support', 100, 'End of Standard Support is not yet announced');
+            }
+
+            const standardEnd = parseDate(endOfStandardSupport);
+            const extendedEnd = parseDate(endOfExtendedSupport);
+            let timeline = '';
+            let currentDate = config.startDate;
+
+            if (standardEnd && standardEnd > config.startDate) {
+                const width = calculateWidth(currentDate, standardEnd);
+                timeline += createTimelineBar('standard-support', width, 
+                    `Standard Support: until ${formatDate(endOfStandardSupport)}`);
+                currentDate = standardEnd;
+            } else if (!standardEnd && extendedEnd) {
+                timeline += createTimelineBar('standard-support', 0, 
+                    'End of Standard Support is not yet announced');
+            } else if (!standardEnd && !extendedEnd) {
+                return createTimelineBar('standard-support', 100, 
+                    'End of Standard Support is not yet announced');
+            }
+
+            if (extendedEnd && extendedEnd > currentDate) {
+                const width = calculateWidth(currentDate, extendedEnd);
+                timeline += createTimelineBar('extended-support', width, 
+                    `Extended Support: ${formatDate(currentDate)} - ${formatDate(endOfExtendedSupport)}`);
+                currentDate = extendedEnd;
+            }
+
+            if (currentDate < config.endDate) {
+                const width = calculateWidth(currentDate, config.endDate);
+                timeline += createTimelineBar('end-of-support', width, 
+                    `Out of Support after ${formatDate(currentDate)}`);
+            }
+
+            return timeline;
+        };
+
+        // ============================================================================
+        // UPDATED: GET ALL COMPONENTS FOR A SITE ACROSS ALL SECTIONS
+        // ============================================================================
+        const getAllComponentsForSite = (site) => {
+            if (site === 'all') {
+                // Return all components from all sections
+                const allComponents = [];
+                Object.keys(data).forEach(sectionKey => {
+                    if (data[sectionKey].components) {
+                        data[sectionKey].components.forEach(comp => {
+                            allComponents.push({...comp, section: sectionKey});
+                        });
+                    }
+                });
+                return allComponents;
+            }
+
+            // Get components for specific site across all sections
+            const siteComponents = [];
+            const siteMappingData = siteMapping[site];
+            
+            if (siteMappingData) {
+                Object.keys(siteMappingData).forEach(sectionKey => {
+                    const siteIds = siteMappingData[sectionKey] || [];
+                    const sectionComponents = data[sectionKey]?.components || [];
+                    
+                    sectionComponents.forEach(comp => {
+                        if (siteIds.includes(comp.id)) {
+                            siteComponents.push({...comp, section: sectionKey});
+                        }
+                    });
+                });
+            }
+            
+            return siteComponents;
+        };
+
+        // ============================================================================
+        // UPDATED: RENDER TABLE FUNCTION WITH CROSS-SECTION SITE FILTERING
+        // ============================================================================
+        const renderTable = (section, filter = 'all', site = 'all') => {
+            const tableBody = document.querySelector('tbody');
+            let components;
+
+            if (site === 'all') {
+                // Show only the selected section when no site filter is applied
+                components = data[section]?.components || [];
+            } else {
+                // When a site is selected, get all components for that site across all sections
+                // but still respect the section filter
+                const allSiteComponents = getAllComponentsForSite(site);
+                components = allSiteComponents.filter(comp => comp.section === section);
+            }
+            
+            if (!components || components.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #666;">No components found for the selected filters</td></tr>';
+                
+                // Update counters to 0
+                document.querySelectorAll('.legend-btn').forEach(btn => {
+                    const counterElement = btn.querySelector('.legend-counter');
+                    if (counterElement) {
+                        counterElement.textContent = '0';
+                    }
+                });
+                return;
+            }
+
+            // Count items for each support status
+            const counts = {
+                all: components.length,
+                supported: 0,
+                extended: 0,
+                unsupported: 0
+            };
+
+            components.forEach(comp => {
+                const status = getSupportStatus(comp);
+                counts[status]++;
+            });
+
+            // Update counter badges
+            document.querySelectorAll('.legend-btn').forEach(btn => {
+                const filterType = btn.dataset.filter;
+                const counter = counts[filterType] || 0;
+                const counterElement = btn.querySelector('.legend-counter');
+                if (counterElement) {
+                    counterElement.textContent = counter;
+                }
+            });
+
+            // Filter components based on support status
+            const filteredComponents = components.filter(comp => {
+                if (filter === 'all') return true;
+                const status = getSupportStatus(comp);
+                return status === filter;
+            });
+
+            const grouped = filteredComponents.reduce((acc, comp) => {
+                const category = comp.category || comp.subCategory || 'Unknown';
+                (acc[category] = acc[category] || []).push(comp);
+                return acc;
+            }, {});
+
+            // Only show categories that have items after filtering
+            tableBody.innerHTML = Object.entries(grouped)
+                .filter(([_, items]) => items.length > 0)
+                .map(([category, items], idx) => {
+                    const bgClass = idx % 2 === 0 ? 'category-even' : 'category-odd';
+                    return `
+                        <tr class="category-title-row"><td colspan="5">${category}</td></tr>
+                        ${items.map(comp => `
+                            <tr class="${bgClass}">
+                                <td>${comp.component || ''}</td>
+                                <td>${comp.type || ''}</td>
+                                <td>${comp.location || ''}</td>
+                                <td>${comp.model || ''}</td>
+                                <td class="timeline-cell">
+                                    <div class="timeline-bar-wrapper">
+                                        <div class="timeline-bar-container">
+                                            ${createTimeline(comp)}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    `;
+                }).join('');
+
+            attachTooltipListeners();
+        };
+
+        // ============================================================================
+        // UPDATED: UPDATE LEGEND COUNTERS FOR SITE FILTER
+        // ============================================================================
+        const updateLegendCountersForSite = (site) => {
+            const allSiteComponents = getAllComponentsForSite(site);
+            
+            const counts = {
+                all: allSiteComponents.length,
+                supported: 0,
+                extended: 0,
+                unsupported: 0
+            };
+
+            allSiteComponents.forEach(comp => {
+                const status = getSupportStatus(comp);
+                counts[status]++;
+            });
+
+            // Update counter badges
+            document.querySelectorAll('.legend-btn').forEach(btn => {
+                const filterType = btn.dataset.filter;
+                const counter = counts[filterType] || 0;
+                const counterElement = btn.querySelector('.legend-counter');
+                if (counterElement) {
+                    counterElement.textContent = counter;
+                }
+            });
+        };
+
+        // ============================================================================
+        // POPULATE SITE DROPDOWN FROM SITE MAPPING
+        // ============================================================================
+        const populateSiteDropdown = () => {
+            const dropdown = document.getElementById('siteDropdownMenu');
+            
+            // Create dropdown items for each site
+            let siteHtml = '<div class="dropdown-item active" data-site="all">All Sites</div>';
+            
+            // Add each site from the mapping
+            Object.keys(siteMapping).forEach(site => {
+                siteHtml += `<div class="dropdown-item" data-site="${site}">${site}</div>`;
+            });
+            
+            dropdown.innerHTML = siteHtml;
+            
+            // Add event listeners to dropdown items
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.dropdown-item').forEach(i => 
+                        i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const selectedSite = this.dataset.site;
+                    const currentSection = document.querySelector('.toggle-btn.active:not(.dropdown-btn)').dataset.section;
+                    const currentFilter = document.querySelector('.legend-btn.active').dataset.filter;
+                    
+                    // Update dropdown button text
+                    const dropdownBtn = document.getElementById('siteDropdown');
+                    dropdownBtn.innerHTML = selectedSite === 'all' 
+                        ? 'Sites <span class="dropdown-arrow">▼</span>' 
+                        : `${selectedSite} <span class="dropdown-arrow">▼</span>`;
+                    
+                    // Close dropdown
+                    document.getElementById('siteDropdownMenu').classList.remove('show');
+                    dropdownBtn.classList.remove('active');
+                    
+                    // Update global site filter
+                    window.currentSite = selectedSite;
+                    
+                    // Render table with new filters
+                    renderTable(currentSection, currentFilter, selectedSite);
+                });
+            });
+        };
+
+        // ============================================================================
+        // TOOLTIP FUNCTIONS
+        // ============================================================================
+        const updateTooltipPosition = (e, tooltip) => {
+            const { offsetWidth: width, offsetHeight: height } = tooltip;
+            const padding = 15;
+            let left = e.clientX + padding;
+            let top = e.clientY - height / 2;
+
+            if (left + width > window.innerWidth) left = e.clientX - width - padding;
+            if (top < 0) top = padding;
+            if (top + height > window.innerHeight) top = window.innerHeight - height - padding;
+
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+        };
+
+        const attachTooltipListeners = () => {
+            const tooltip = document.getElementById('tooltip');
+            document.querySelectorAll('.timeline-bar').forEach(bar => {
+                bar.addEventListener('mouseenter', (e) => {
+                    const text = bar.getAttribute('data-tooltip');
+                    if (text) {
+                        tooltip.textContent = text;
+                        tooltip.style.display = 'block';
+                        updateTooltipPosition(e, tooltip);
+                    }
+                });
+                bar.addEventListener('mousemove', (e) => updateTooltipPosition(e, tooltip));
+                bar.addEventListener('mouseleave', () => tooltip.style.display = 'none');
+            });
+        };
+
+        // ============================================================================
+        // EVENT LISTENERS AND INITIALIZATION
+        // ============================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentSection = 'sharedInfrastructure';
+            let currentFilter = 'all';
+            let currentSite = 'all';
+            
+            // Make currentSite globally accessible
+            window.currentSite = currentSite;
+            
+            // Populate site dropdown
+            populateSiteDropdown();
+            
+            // Section toggle buttons
+            document.querySelectorAll('.toggle-btn:not(.dropdown-btn)').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.toggle-btn:not(.dropdown-btn)').forEach(b => 
+                        b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentSection = this.dataset.section;
+                    renderTable(currentSection, currentFilter, window.currentSite);
+                });
+            });
+
+            // Legend filter buttons
+            document.querySelectorAll('.legend-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.legend-btn').forEach(b => 
+                        b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    renderTable(currentSection, currentFilter, window.currentSite);
+                });
+            });
+            
+            // Dropdown toggle
+            document.getElementById('siteDropdown').addEventListener('click', function(e) {
+                e.stopPropagation();
+                const menu = document.getElementById('siteDropdownMenu');
+                menu.classList.toggle('show');
+                this.classList.toggle('active');
+            });
+            
+            // Close dropdown when clicking outside
+            window.addEventListener('click', function() {
+                const menu = document.getElementById('siteDropdownMenu');
+                const btn = document.getElementById('siteDropdown');
+                menu.classList.remove('show');
+                btn.classList.remove('active');
+            });
+
+            // Initialize with first section and all items
+            renderTable(currentSection, currentFilter, currentSite);
+        });
+    </script>
+</body>
+</html>
